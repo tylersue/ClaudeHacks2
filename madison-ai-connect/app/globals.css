@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Aurora accent palette */
+  --blue:        #5B8FFF;
+  --blue-light:  #8BB5FF;
+  --blue-dim:    rgba(91,143,255,.12);
+  --purple:      #9B5BFF;
+  --purple-dim:  rgba(155,91,255,.10);
+
+  /* Site variables */
+  --black:       #060A1A;          /* hero bg / nav */
+  --charcoal:    #f5f6fa;          /* section card bg */
+  --surface:     #edeef4;          /* surface */
+  --cream:       #12141e;          /* body text */
+  --cream-dim:   rgba(18,20,30,.58);
+  --muted:       rgba(18,20,30,.42);
+  --border:      rgba(0,0,0,.08);
+  --white:       #ffffff;
+  --off-white:   #f8f9ff;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #ffffff;
+  color: var(--cream);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── Custom cursor ───────────────────────────────── */
+.cursor {
+  position: fixed; width: 8px; height: 8px;
+  background: var(--cream); border-radius: 50%;
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+}
+.cursor-ring {
+  position: fixed; width: 34px; height: 34px;
+  border: 1px solid rgba(91,143,255,.40);
+  border-radius: 50%; pointer-events: none;
+  z-index: 9998; transform: translate(-50%, -50%);
+}
+
+/* ── Buttons ─────────────────────────────────────── */
+.btn-primary {
+  background: var(--blue);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500;
+  padding: 13px 30px; border-radius: 100px;
+  border: none; cursor: none; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  letter-spacing: .01em;
+  transition: opacity .2s, transform .2s, box-shadow .2s;
+}
+.btn-primary:hover { opacity: .85; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(91,143,255,.35); }
+.btn-ghost {
+  color: rgba(255,255,255,.72);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 400;
+  padding: 13px 24px; border-radius: 100px;
+  border: 1px solid rgba(255,255,255,.22);
+  cursor: none; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: border-color .2s, background .2s, color .2s;
+}
+.btn-ghost:hover { border-color: rgba(255,255,255,.5); color: #fff; background: rgba(255,255,255,.06); }
+
+/* ── Section typography ──────────────────────────── */
+.section-label {
+  font-size: 10px; font-weight: 500; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--blue);
+  margin-bottom: 16px; display: block;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 5vw, 60px);
+  font-weight: 500; line-height: 1.1;
+  letter-spacing: -.02em; color: var(--cream);
+}
+.section-title em { font-style: italic; color: var(--blue); }
+.section-body {
+  font-size: 16px; font-weight: 300; line-height: 1.7;
+  color: var(--muted); max-width: 560px;
+}
+
+/* ── Reveal ──────────────────────────────────────── */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+.reveal-d1 { transition-delay: .1s; } .reveal-d2 { transition-delay: .2s; }
+.reveal-d3 { transition-delay: .3s; } .reveal-d4 { transition-delay: .4s; }
+
+@keyframes fadeUp   { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
+@keyframes spinSlow { from { transform: translate(-50%,-50%) rotate(0deg); } to { transform: translate(-50%,-50%) rotate(360deg); } }
+@keyframes scrollPulse { 0%,100% { opacity: .25; } 50% { opacity: .85; } }
+@keyframes pulseGlow { 0%,100% { box-shadow: 0 0 20px rgba(91,143,255,.3); } 50% { box-shadow: 0 0 40px rgba(91,143,255,.6); } }
+
+.container { max-width: 1280px; margin: 0 auto; }
+@media (max-width: 768px) { .hide-mobile { display: none !important; } }

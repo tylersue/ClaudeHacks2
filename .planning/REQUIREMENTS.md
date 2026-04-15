@@ -66,24 +66,24 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| PROF-01 | — | Pending |
-| PROF-02 | — | Pending |
-| PROF-03 | — | Pending |
-| MTCH-01 | — | Pending |
-| MTCH-02 | — | Pending |
-| MTCH-03 | — | Pending |
-| VIZN-01 | — | Pending |
-| COMM-01 | — | Pending |
-| COMM-02 | — | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| PROF-01 | Phase 2 | Pending |
+| PROF-02 | Phase 2 | Pending |
+| PROF-03 | Phase 2 | Pending |
+| MTCH-01 | Phase 3 | Pending |
+| MTCH-02 | Phase 3 | Pending |
+| MTCH-03 | Phase 3 | Pending |
+| VIZN-01 | Phase 3 | Pending |
+| COMM-01 | Phase 4 | Pending |
+| COMM-02 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12 ⚠️
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-14*
-*Last updated: 2026-04-14 after initial definition*
+*Last updated: 2026-04-14 — traceability updated after roadmap creation*

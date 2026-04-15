@@ -36,6 +36,17 @@ export default function OnboardPage() {
       localStorage.setItem('mac_name', name || 'You');
       localStorage.setItem('mac_year', year);
       localStorage.setItem('mac_memory', memoryText);
+      // Clear any stale cached profile so the mindmap page fetches fresh data
+      localStorage.removeItem('mac_profile');
+      // Call API in background while showing the processing animation
+      fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memoryText }),
+      }).then(r => r.json()).then(profile => {
+        localStorage.setItem('mac_profile', JSON.stringify(profile));
+      }).catch(() => {});
+      // Still navigate after timeout
       setTimeout(() => router.push('/mindmap'), 2200);
     } else {
       setStep(s => s + 1);

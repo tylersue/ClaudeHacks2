@@ -6,6 +6,13 @@ import type { MindNode, EdgeDef } from '@/components/MindMapViz';
 
 const MindMapViz = dynamic(() => import('@/components/MindMapViz'), { ssr: false });
 
+interface Profile {
+  nodes: MindNode[];
+  edges: EdgeDef[];
+  categories: { label: string; color: string; items: string[] }[];
+  personality: string;
+}
+
 // ── Demo graph data ───────────────────────────────────────────────────────────
 const DEMO_NODES: MindNode[] = [
   // Inner ring — primary interests
@@ -42,17 +49,53 @@ const CATEGORIES = [
 ];
 
 export default function MindMapPage() {
-  const [name, setName]     = useState('You');
-  const [phase, setPhase]   = useState<'loading'|'reveal'|'ready'>('loading');
+  const [name, setName]         = useState('You');
+  const [phase, setPhase]       = useState<'loading'|'reveal'|'ready'>('loading');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profile, setProfile]   = useState<Profile | null>(null);
+  const [apiLoading, setApiLoading] = useState(true);
 
   useEffect(() => {
     setName(localStorage.getItem('mac_name') || 'You');
+
+    // Try cached profile first, then call API, then fall back to demo data
+    const cached = localStorage.getItem('mac_profile');
+    if (cached) {
+      try {
+        setProfile(JSON.parse(cached));
+      } catch {
+        // ignore parse errors
+      }
+      setApiLoading(false);
+    } else {
+      const memoryText = localStorage.getItem('mac_memory') || '';
+      fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memoryText }),
+      })
+        .then(r => r.json())
+        .then(data => {
+          setProfile(data);
+          localStorage.setItem('mac_profile', JSON.stringify(data));
+        })
+        .catch(() => {
+          // fall back to demo data (profile stays null)
+        })
+        .finally(() => setApiLoading(false));
+    }
+
     // Stagger: loading → reveal after brief pause
     const t1 = setTimeout(() => setPhase('reveal'), 200);
     const t2 = setTimeout(() => { setPhase('ready'); setSidebarOpen(true); }, 1800);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
+
+  const activeNodes      = profile?.nodes      ?? DEMO_NODES;
+  const activeEdges      = profile?.edges      ?? DEMO_EDGES;
+  const activeCategories = profile?.categories ?? CATEGORIES;
+  const activePersonality = profile?.personality ??
+    "Strong overlap between systematic thinking and intellectual play. The Chess + Philosophy pairing is unusual — suggests someone who treats ideas like endgames, not starting points.";
 
   return (
     <div style={{
@@ -91,22 +134,34 @@ export default function MindMapPage() {
           fontSize:11, color:'rgba(180,210,255,.65)', letterSpacing:'.06em',
         }}>
           <span style={{ width:5,height:5,borderRadius:'50%',background:'#5B8FFF',boxShadow:'0 0 8px #5B8FFF',flexShrink:0 }} />
-          {name}&apos;s map &nbsp;·&nbsp; {DEMO_NODES.length} nodes &nbsp;·&nbsp; {DEMO_EDGES.length} connections
+          {apiLoading ? 'Claude is mapping your mind…' : `${name}'s map · ${activeNodes.length} nodes · ${activeEdges.length} connections`}
         </div>
 
-        <a href="/connect" style={{
-          display:'flex', alignItems:'center', gap:8,
-          padding:'9px 20px', borderRadius:100,
-          background:'rgba(91,143,255,.15)', border:'1px solid rgba(91,143,255,.30)',
-          color:'rgba(200,220,255,.90)', fontSize:13, fontWeight:500, textDecoration:'none',
-          transition:'background .2s, border-color .2s',
-          letterSpacing:'.01em',
-        }}>
-          Find connections
-          <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-            <path d="M1 7h12M8 3l5 4-5 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </a>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <a href="/classes" style={{
+            display:'flex', alignItems:'center', gap:8,
+            padding:'9px 20px', borderRadius:100,
+            background:'rgba(155,91,255,.10)', border:'1px solid rgba(155,91,255,.25)',
+            color:'rgba(200,220,255,.75)', fontSize:13, fontWeight:500, textDecoration:'none',
+            transition:'background .2s, border-color .2s',
+            letterSpacing:'.01em',
+          }}>
+            Your Classes
+          </a>
+          <a href="/connect" style={{
+            display:'flex', alignItems:'center', gap:8,
+            padding:'9px 20px', borderRadius:100,
+            background:'rgba(91,143,255,.15)', border:'1px solid rgba(91,143,255,.30)',
+            color:'rgba(200,220,255,.90)', fontSize:13, fontWeight:500, textDecoration:'none',
+            transition:'background .2s, border-color .2s',
+            letterSpacing:'.01em',
+          }}>
+            Find connections
+            <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+              <path d="M1 7h12M8 3l5 4-5 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </a>
+        </div>
       </header>
 
       {/* ── Main content ────────────────────────────────────────────────── */}
@@ -114,14 +169,29 @@ export default function MindMapPage() {
 
         {/* Canvas — full area */}
         <div style={{ flex:1, position:'relative' }}>
-          {phase !== 'loading' && (
+          {phase !== 'loading' && !apiLoading && (
             <MindMapViz
               name={name}
-              nodes={DEMO_NODES}
-              edges={DEMO_EDGES}
+              nodes={activeNodes}
+              edges={activeEdges}
               fill
               accentColor="#5B8FFF"
             />
+          )}
+          {apiLoading && (
+            <div style={{
+              position:'absolute', inset:0,
+              display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+              gap:16, pointerEvents:'none',
+            }}>
+              <div style={{ fontSize:36, animation:'spinSlow 2s linear infinite', color:'#5B8FFF' }}>◈</div>
+              <div style={{ fontFamily:"'Playfair Display',serif", fontSize:20, color:'rgba(255,255,255,.80)' }}>
+                Claude is mapping your mind...
+              </div>
+              <div style={{ fontSize:12, color:'rgba(150,190,255,.50)', letterSpacing:'.08em', textTransform:'uppercase' }}>
+                analyzing your memory
+              </div>
+            </div>
           )}
 
           {/* Floating title overlay — fades out once ready */}
@@ -191,7 +261,7 @@ export default function MindMapPage() {
                 Interest clusters
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-                {CATEGORIES.map(cat => (
+                {activeCategories.map(cat => (
                   <div key={cat.label}>
                     <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:7 }}>
                       <div style={{ width:6,height:6,borderRadius:'50%',background:cat.color,boxShadow:`0 0 7px ${cat.color}`,flexShrink:0 }} />
@@ -229,7 +299,7 @@ export default function MindMapPage() {
                 background:'rgba(91,143,255,.05)', border:'1px solid rgba(91,143,255,.11)',
               }}>
                 <p style={{ fontSize:12, color:'rgba(175,200,245,.62)', lineHeight:1.70, margin:0 }}>
-                  Strong overlap between systematic thinking and intellectual play. The Chess + Philosophy pairing is unusual — suggests someone who treats ideas like endgames, not starting points.
+                  {activePersonality}
                 </p>
               </div>
             </div>
@@ -241,10 +311,10 @@ export default function MindMapPage() {
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                 {[
-                  { val: DEMO_NODES.length, label:'Nodes' },
-                  { val: DEMO_EDGES.length, label:'Edges' },
-                  { val: DEMO_NODES.filter(n=>n.shared).length, label:'Shared' },
-                  { val: CATEGORIES.length, label:'Clusters' },
+                  { val: activeNodes.length, label:'Nodes' },
+                  { val: activeEdges.length, label:'Edges' },
+                  { val: activeNodes.filter(n=>n.shared).length, label:'Shared' },
+                  { val: activeCategories.length, label:'Clusters' },
                 ].map(s => (
                   <div key={s.label} style={{
                     padding:'10px 12px', borderRadius:10,

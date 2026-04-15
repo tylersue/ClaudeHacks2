@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Cursor from '@/components/Cursor';
 import type { MindNode } from '@/components/MindMapViz';
@@ -29,14 +29,72 @@ const bg: React.CSSProperties = {
   fontFamily:"'DM Sans',sans-serif", color:'#fff',
 };
 
+interface ChatMessage {
+  id: number;
+  sender: 'me' | 'tyler';
+  text: string;
+  time: string;
+}
+
 export default function OverlapPage() {
   const [name, setName]   = useState('You');
   const [visible, setVis] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [draft, setDraft] = useState('');
+  const [introSent, setIntroSent] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setName(localStorage.getItem('mac_name') || 'You');
     setTimeout(() => setVis(true), 100);
   }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const now = () => {
+    const d = new Date();
+    return d.toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
+  };
+
+  const openChat = () => {
+    setChatOpen(true);
+    if (!introSent) {
+      setIntroSent(true);
+      const introText = `Hey Tyler! I saw we're both into chess and startups — would love to grab coffee before class sometime. Monday at 10 work?`;
+      setMessages([{ id: 1, sender: 'me', text: introText, time: now() }]);
+      // Simulate Tyler replying
+      setTimeout(() => {
+        setMessages(prev => [...prev, {
+          id: 2, sender: 'tyler',
+          text: `Hey! Yeah I saw your mindmap — the ML + philosophy combo is wild. Monday at 10 works, Memorial Union?`,
+          time: now(),
+        }]);
+      }, 2200);
+    }
+  };
+
+  const sendMessage = () => {
+    if (!draft.trim()) return;
+    setMessages(prev => [...prev, { id: Date.now(), sender: 'me', text: draft.trim(), time: now() }]);
+    setDraft('');
+    // Simulate Tyler's response
+    setTimeout(() => {
+      const replies = [
+        "That sounds great! I've been wanting to talk to someone about that.",
+        "Totally agree. I was just asking Claude about something similar last week.",
+        "Nice — yeah let's do it. I'll bring my board if you want to play a quick game too.",
+        "Ha, I was thinking the same thing. See you there!",
+      ];
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1, sender: 'tyler',
+        text: replies[Math.floor(Math.random() * replies.length)],
+        time: now(),
+      }]);
+    }, 1500 + Math.random() * 1500);
+  };
 
   return (
     <div style={{...bg, cursor:'none'}}>
@@ -152,18 +210,19 @@ export default function OverlapPage() {
 
             {/* CTA */}
             <div style={{ display:'flex', gap:12, flexWrap:'wrap' }}>
-              <a href="#" style={{
+              <button onClick={openChat} style={{
                 padding:'14px 32px', borderRadius:100,
                 background:'linear-gradient(135deg,#5B8FFF,#9B5BFF)',
                 color:'#fff', fontSize:14, fontWeight:500, textDecoration:'none',
                 display:'inline-flex', alignItems:'center', gap:8,
                 boxShadow:'0 8px 28px rgba(91,143,255,.28)',
+                border:'none', cursor:'none', fontFamily:"'DM Sans',sans-serif",
               }}>
-                Send Tyler an intro
+                {introSent ? 'Open chat with Tyler' : 'Send Tyler an intro'}
                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
                   <path d="M1 7h12M8 3l5 4-5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-              </a>
+              </button>
               <a href="/mindmap" style={{
                 padding:'14px 24px', borderRadius:100,
                 border:'1px solid rgba(91,143,255,.28)',
@@ -176,6 +235,158 @@ export default function OverlapPage() {
           </div>
         </div>
       </div>
+
+      {/* Chat Modal */}
+      {chatOpen && (
+        <div style={{
+          position:'fixed', inset:0, zIndex:100,
+          background:'rgba(6,10,26,.70)', backdropFilter:'blur(8px)',
+          display:'flex', alignItems:'flex-end', justifyContent:'center',
+          animation:'fadeIn .3s ease',
+        }} onClick={(e) => { if (e.target === e.currentTarget) setChatOpen(false) }}>
+          <div style={{
+            width:'100%', maxWidth:520,
+            height:'min(85vh, 700px)',
+            background:'linear-gradient(180deg,#0A0F22 0%,#070D1C 100%)',
+            borderRadius:'24px 24px 0 0',
+            border:'1px solid rgba(91,143,255,.15)',
+            borderBottom:'none',
+            display:'flex', flexDirection:'column',
+            animation:'slideUp .4s cubic-bezier(.22,1,.36,1)',
+            overflow:'hidden',
+          }}>
+            {/* Chat header */}
+            <div style={{
+              padding:'20px 24px', display:'flex', alignItems:'center', justifyContent:'space-between',
+              borderBottom:'1px solid rgba(91,143,255,.10)',
+              background:'rgba(8,12,32,.60)',
+            }}>
+              <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                <div style={{
+                  width:36, height:36, borderRadius:'50%',
+                  background:'linear-gradient(135deg,#9B5BFF,#5B8FFF)',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize:14, fontWeight:500, color:'#fff',
+                }}>T</div>
+                <div>
+                  <div style={{ fontFamily:"'Playfair Display',serif", fontSize:16, fontWeight:500, color:'rgba(255,255,255,.92)' }}>Tyler</div>
+                  <div style={{ fontSize:11, color:'rgba(150,190,255,.50)', display:'flex', alignItems:'center', gap:4 }}>
+                    <span style={{ width:6, height:6, borderRadius:'50%', background:'#4ADE80', display:'inline-block' }} />
+                    Online
+                  </div>
+                </div>
+              </div>
+              <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+                <div style={{
+                  padding:'5px 10px', borderRadius:8,
+                  background:'rgba(91,143,255,.08)', border:'1px solid rgba(91,143,255,.15)',
+                  fontSize:11, color:'rgba(150,190,255,.65)',
+                }}>73% match</div>
+                <button onClick={() => setChatOpen(false)} style={{
+                  background:'none', border:'none', color:'rgba(150,190,255,.50)',
+                  fontSize:20, cursor:'none', padding:4, lineHeight:1,
+                }}>×</button>
+              </div>
+            </div>
+
+            {/* Shared interests banner */}
+            <div style={{
+              padding:'12px 24px', display:'flex', alignItems:'center', gap:8,
+              background:'rgba(91,143,255,.04)', borderBottom:'1px solid rgba(91,143,255,.08)',
+            }}>
+              <span style={{ fontSize:10, letterSpacing:'.15em', textTransform:'uppercase', color:'rgba(91,143,255,.55)' }}>Shared</span>
+              {['Chess','Coffee','Philosophy','Startups'].map(s => (
+                <span key={s} style={{
+                  padding:'3px 10px', borderRadius:100, fontSize:11,
+                  background:'rgba(91,143,255,.08)', border:'1px solid rgba(91,143,255,.12)',
+                  color:'rgba(180,205,255,.65)',
+                }}>{s}</span>
+              ))}
+            </div>
+
+            {/* Messages */}
+            <div style={{
+              flex:1, overflowY:'auto', padding:'20px 24px',
+              display:'flex', flexDirection:'column', gap:16,
+            }}>
+              {messages.length === 0 && (
+                <div style={{ textAlign:'center', padding:'40px 20px', color:'rgba(150,190,255,.35)', fontSize:13 }}>
+                  Send a message to start the conversation
+                </div>
+              )}
+              {messages.map(msg => (
+                <div key={msg.id} style={{
+                  display:'flex', flexDirection:'column',
+                  alignItems: msg.sender === 'me' ? 'flex-end' : 'flex-start',
+                  animation:'fadeIn .3s ease',
+                }}>
+                  <div style={{
+                    maxWidth:'80%', padding:'12px 16px', borderRadius:16,
+                    ...(msg.sender === 'me' ? {
+                      background:'linear-gradient(135deg,#5B8FFF,#7B6FFF)',
+                      borderBottomRightRadius:4,
+                      color:'#fff',
+                    } : {
+                      background:'rgba(91,143,255,.08)',
+                      border:'1px solid rgba(91,143,255,.12)',
+                      borderBottomLeftRadius:4,
+                      color:'rgba(220,230,255,.88)',
+                    }),
+                    fontSize:14, lineHeight:1.6, fontWeight:300,
+                  }}>
+                    {msg.text}
+                  </div>
+                  <span style={{ fontSize:10, color:'rgba(150,190,255,.35)', marginTop:4, padding:'0 4px' }}>
+                    {msg.sender === 'me' ? name : 'Tyler'} · {msg.time}
+                  </span>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Composer */}
+            <div style={{
+              padding:'16px 24px', borderTop:'1px solid rgba(91,143,255,.10)',
+              background:'rgba(8,12,32,.60)',
+              display:'flex', gap:10, alignItems:'center',
+            }}>
+              <input
+                type="text"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') sendMessage() }}
+                placeholder="Type a message..."
+                style={{
+                  flex:1, padding:'12px 16px', borderRadius:12,
+                  background:'rgba(91,143,255,.06)', border:'1px solid rgba(91,143,255,.12)',
+                  color:'#fff', fontSize:14, fontFamily:"'DM Sans',sans-serif",
+                  outline:'none', fontWeight:300,
+                }}
+              />
+              <button onClick={sendMessage} style={{
+                width:42, height:42, borderRadius:12,
+                background: draft.trim() ? 'linear-gradient(135deg,#5B8FFF,#9B5BFF)' : 'rgba(91,143,255,.10)',
+                border:'none', cursor:'none',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                transition:'background .2s',
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M22 2L11 13" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Slide-up animation */}
+      <style jsx>{`
+        @keyframes slideUp {
+          from { transform: translateY(100%); opacity: 0; }
+          to   { transform: translateY(0);    opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

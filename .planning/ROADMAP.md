@@ -27,7 +27,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. User can sign in via the UW SSO flow and land on an authenticated dashboard
   2. User can enter a Canvas personal access token and see their actual course list pulled from canvas.wisc.edu
   3. User can upload a Claude or ChatGPT JSON export and the file is accepted and stored
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 01-01-PLAN.md — Scaffold project + auth flow (Supabase email/password, @wisc.edu gate, login/dashboard routes)
+- [ ] 01-02-PLAN.md — Canvas course integration + LLM chat history upload + unit tests
 
 ### Phase 2: Intelligence
 **Goal**: Users can see a rich, multi-dimensional profile of their own interests, thinking style, and personality — generated from their uploaded chat history by Claude API
@@ -67,7 +70,7 @@ Note: With 3 people, Phase 2 backend analysis and Phase 3 frontend graph scaffol
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/TBD | Not started | - |
+| 1. Foundation | 0/2 | Planning complete | - |
 | 2. Intelligence | 0/TBD | Not started | - |
 | 3. Matching + Graph | 0/TBD | Not started | - |
 | 4. Connection | 0/TBD | Not started | - |

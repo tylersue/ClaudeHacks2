@@ -81,7 +81,7 @@ export default function Hero() {
             opacity: 0, animation: 'fadeUp .8s .15s forwards',
           }}>
             <span style={{ width: 28, height: 1, background: 'rgba(91,143,255,0.30)', flexShrink: 0 }} />
-            AI-powered student connections
+            AI mind map · student connections
             <span style={{ width: 28, height: 1, background: 'rgba(91,143,255,0.30)', flexShrink: 0 }} />
           </div>
 
@@ -93,17 +93,17 @@ export default function Hero() {
             color: '#FFFFFF', margin: '0 0 22px',
             opacity: 0, animation: 'fadeUp .9s .35s forwards',
           }}>
-            Madison<br />
-            <em style={{ fontStyle: 'italic', color: '#5B8FFF' }}>AI Connect.</em>
+            Map your mind.<br />
+            <em style={{ fontStyle: 'italic', color: '#5B8FFF' }}>Find your people.</em>
           </h1>
 
           {/* Subtitle */}
           <p style={{
             fontSize: 17, fontWeight: 300, lineHeight: 1.80,
-            color: 'rgba(180,200,255,0.50)', maxWidth: 400, margin: '0 0 44px',
+            color: 'rgba(180,200,255,0.50)', maxWidth: 420, margin: '0 0 44px',
             opacity: 0, animation: 'fadeUp .9s .55s forwards',
           }}>
-            Upload your AI memory file. Find the students who think exactly like you — powered by Claude.
+            Upload your Claude or ChatGPT memory. We build a mind map of your interests and connect you with students who think like you — plus find time you&apos;re both free.
           </p>
 
           {/* CTAs */}
@@ -112,13 +112,13 @@ export default function Hero() {
             justifyContent: 'center', marginBottom: 64,
             opacity: 0, animation: 'fadeUp .9s .75s forwards',
           }}>
-            <a href="#cta" className="btn-primary">
-              Upload your memory
+            <a href="/onboard" className="btn-primary">
+              Map my mind
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
                 <path d="M1 7h12M8 3l5 4-5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </a>
-            <a href="#features" className="btn-ghost">How it works</a>
+            <a href="#features" className="btn-ghost">See how it works</a>
           </div>
 
           {/* Trust stats */}
@@ -127,9 +127,9 @@ export default function Hero() {
             opacity: 0, animation: 'fadeUp .9s .95s forwards',
           }}>
             {[
-              { val: '2,400+', label: 'Matched'    },
-              { val: 'Claude', label: 'Powered by'  },
-              { val: 'UW',     label: 'Madison'     },
+              { val: '2,400+', label: 'Mapped'     },
+              { val: 'Claude', label: 'Powered by' },
+              { val: 'UW',     label: 'Madison'    },
             ].map(s => (
               <div key={s.label} style={{ textAlign: 'center' }}>
                 <div style={{

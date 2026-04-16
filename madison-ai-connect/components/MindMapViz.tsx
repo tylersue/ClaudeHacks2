@@ -17,7 +17,8 @@ type Props = {
   height?: number;
   compact?: boolean;
   accentColor?: string;
-  fill?: boolean;     // fill container instead of fixed height
+  fill?: boolean;        // fill container instead of fixed height
+  transparent?: boolean; // skip canvas background (use when DitherBg is behind)
 };
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -32,7 +33,7 @@ function easeOutCubic(t:number){ return 1-Math.pow(1-t,3); }
 function clamp(v:number,lo:number,hi:number){ return Math.max(lo,Math.min(hi,v)); }
 
 export default function MindMapViz({
-  name, nodes, edges=[], height=580, compact=false, accentColor='#5B8FFF', fill=false,
+  name, nodes, edges=[], height=580, compact=false, accentColor='#5B8FFF', fill=false, transparent=false,
 }: Props) {
   const wrapRef   = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -60,14 +61,14 @@ export default function MindMapViz({
 
     let { W, H } = setup();
     let cx = W/2, cy = H/2;
-    const INNER_R = () => Math.min(W,H) * (compact ? 0.22 : 0.26);
-    const OUTER_R = () => Math.min(W,H) * (compact ? 0.38 : 0.43);
-    const CENTER_R = compact ? 26 : 38;
-    const LABEL_PAD = 16;
+    const INNER_R = () => Math.min(W,H) * (compact ? 0.22 : 0.30);
+    const OUTER_R = () => Math.min(W,H) * (compact ? 0.38 : 0.47);
+    const CENTER_R = compact ? 26 : 44;
+    const LABEL_PAD = 18;
 
     // ── Star field ─────────────────────────────────────────────────────────
     const makeStars = (w:number, h:number) =>
-      Array.from({ length: 220 }, () => ({
+      Array.from({ length: 280 }, () => ({
         x: Math.random()*w, y: Math.random()*h,
         r: Math.random()*0.9+0.15,
         base: Math.random()*0.28+0.04,
@@ -85,7 +86,7 @@ export default function MindMapViz({
       baseAngle: (i/inner.length)*Math.PI*2 - Math.PI/2,
       ring: 1,
       phase: (i*1.618)%(Math.PI*2),
-      floatAmp: compact ? 4 : 8,
+      floatAmp: compact ? 4 : 10,
       sparkT: Math.random(),
       sparkSpd: 0.0045+Math.random()*0.003,
       revealDelay: i*0.14 + 0.3,
@@ -96,7 +97,7 @@ export default function MindMapViz({
       baseAngle: ((i+0.5)/Math.max(outer.length,1))*Math.PI*2 - Math.PI/2,
       ring: 2,
       phase: (i*2.618)%(Math.PI*2),
-      floatAmp: compact ? 3 : 6,
+      floatAmp: compact ? 3 : 7,
       sparkT: Math.random(),
       sparkSpd: 0.003+Math.random()*0.002,
       revealDelay: i*0.10 + 0.7,
@@ -116,8 +117,8 @@ export default function MindMapViz({
 
     // Node radius by tier
     const nodeR = (n: typeof layout[0]) => {
-      const base = n.ring===2 ? (compact?10:13) : (compact?16:21);
-      return n.shared ? base*1.35 : base;
+      const base = n.ring===2 ? (compact?10:16) : (compact?16:26);
+      return n.shared ? base*1.40 : base;
     };
 
     function drawFrame(ts: number) {
@@ -128,30 +129,32 @@ export default function MindMapViz({
 
       ctx.clearRect(0, 0, W, H);
 
-      // ── Background ─────────────────────────────────────────────────────
-      const bgGrad = ctx.createRadialGradient(cx, cy*0.75, 0, cx, cy, Math.max(W,H)*0.8);
-      bgGrad.addColorStop(0,   'rgba(12,18,48,1)');
-      bgGrad.addColorStop(0.45,'rgba(7,11,28,1)');
-      bgGrad.addColorStop(1,   'rgba(3,5,14,1)');
-      ctx.fillStyle = bgGrad;
-      ctx.fillRect(0,0,W,H);
+      if (!transparent) {
+        // ── Background ───────────────────────────────────────────────────
+        const bgGrad = ctx.createRadialGradient(cx, cy*0.75, 0, cx, cy, Math.max(W,H)*0.8);
+        bgGrad.addColorStop(0,   'rgba(12,18,48,1)');
+        bgGrad.addColorStop(0.45,'rgba(7,11,28,1)');
+        bgGrad.addColorStop(1,   'rgba(3,5,14,1)');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0,0,W,H);
 
-      // Subtle aurora veil
-      const aur = ctx.createRadialGradient(cx,cy*0.5,0, cx,cy*0.5,W*0.55);
-      aur.addColorStop(0, `rgba(91,143,255,${0.028+0.012*Math.sin(elapsed*0.4)})`);
-      aur.addColorStop(1, 'rgba(91,143,255,0)');
-      ctx.fillStyle=aur; ctx.fillRect(0,0,W,H);
-      const aur2 = ctx.createRadialGradient(cx*1.4,cy*1.2,0,cx*1.4,cy*1.2,W*0.45);
-      aur2.addColorStop(0,`rgba(155,91,255,${0.018+0.008*Math.sin(elapsed*0.3+1.2)})`);
-      aur2.addColorStop(1,'rgba(155,91,255,0)');
-      ctx.fillStyle=aur2; ctx.fillRect(0,0,W,H);
+        // Subtle aurora veil
+        const aur = ctx.createRadialGradient(cx,cy*0.5,0, cx,cy*0.5,W*0.55);
+        aur.addColorStop(0, `rgba(91,143,255,${0.028+0.012*Math.sin(elapsed*0.4)})`);
+        aur.addColorStop(1, 'rgba(91,143,255,0)');
+        ctx.fillStyle=aur; ctx.fillRect(0,0,W,H);
+        const aur2 = ctx.createRadialGradient(cx*1.4,cy*1.2,0,cx*1.4,cy*1.2,W*0.45);
+        aur2.addColorStop(0,`rgba(155,91,255,${0.018+0.008*Math.sin(elapsed*0.3+1.2)})`);
+        aur2.addColorStop(1,'rgba(155,91,255,0)');
+        ctx.fillStyle=aur2; ctx.fillRect(0,0,W,H);
 
-      // Stars
-      stars.forEach(s => {
-        const a = s.base*(0.6+0.4*Math.sin(elapsed*s.speed+s.phase));
-        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-        ctx.fillStyle=`rgba(220,235,255,${a})`; ctx.fill();
-      });
+        // Stars
+        stars.forEach(s => {
+          const a = s.base*(0.6+0.4*Math.sin(elapsed*s.speed+s.phase));
+          ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+          ctx.fillStyle=`rgba(220,235,255,${a})`; ctx.fill();
+        });
+      }
 
       // ── Compute node positions ────────────────────────────────────────────
       const pos = layout.map(n => {
@@ -206,31 +209,31 @@ export default function MindMapViz({
       pos.forEach(n => {
         if (n.eased<0.02) return;
         const r = nodeR(n);
-        const glowR = r*(n.shared?3.8:3.0);
-        const pulseIntensity = n.shared ? 0.22+0.08*Math.sin(elapsed*1.8+n.phase) : 0.10+0.04*Math.sin(elapsed+n.phase);
+        const glowR = r*(n.shared?4.5:3.5);
+        const pulseIntensity = n.shared ? 0.28+0.10*Math.sin(elapsed*1.8+n.phase) : 0.13+0.05*Math.sin(elapsed+n.phase);
 
         // Diffuse halo
         const halo=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,glowR);
         halo.addColorStop(0, hex2rgba(n.color,pulseIntensity*n.eased));
-        halo.addColorStop(0.45,hex2rgba(n.color,pulseIntensity*0.35*n.eased));
+        halo.addColorStop(0.40,hex2rgba(n.color,pulseIntensity*0.40*n.eased));
         halo.addColorStop(1, hex2rgba(n.color,0));
         ctx.beginPath(); ctx.arc(n.x,n.y,glowR,0,Math.PI*2);
         ctx.fillStyle=halo; ctx.fill();
 
         // Node body
-        const glowPx = (n.shared?18:8)*n.eased;
+        const glowPx = (n.shared?28:12)*n.eased;
         ctx.shadowBlur=glowPx; ctx.shadowColor=n.color;
         ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
-        ctx.fillStyle=hex2rgba(n.color,(n.shared?0.20:0.10)*n.eased); ctx.fill();
-        ctx.strokeStyle=hex2rgba(n.color,(n.shared?0.85:0.48)*n.eased);
-        ctx.lineWidth=n.shared?1.2:0.6; ctx.stroke();
+        ctx.fillStyle=hex2rgba(n.color,(n.shared?0.24:0.12)*n.eased); ctx.fill();
+        ctx.strokeStyle=hex2rgba(n.color,(n.shared?0.92:0.55)*n.eased);
+        ctx.lineWidth=n.shared?1.8:0.8; ctx.stroke();
         ctx.shadowBlur=0;
 
         // Bright core dot
-        const coreR = r*0.28;
+        const coreR = r*0.30;
         ctx.beginPath(); ctx.arc(n.x,n.y,coreR,0,Math.PI*2);
-        ctx.fillStyle=hex2rgba(n.color,0.82*n.eased);
-        ctx.shadowBlur=14*n.eased; ctx.shadowColor=n.color; ctx.fill(); ctx.shadowBlur=0;
+        ctx.fillStyle=hex2rgba(n.color,0.90*n.eased);
+        ctx.shadowBlur=18*n.eased; ctx.shadowColor=n.color; ctx.fill(); ctx.shadowBlur=0;
 
         // Label — outside node in radial direction
         const dx=n.x-cx, dy=n.y-cy;
@@ -303,7 +306,7 @@ export default function MindMapViz({
 
   return (
     <div ref={wrapRef} style={{ position:'relative', width:'100%', height: fill ? '100%' : height }}>
-      <canvas ref={canvasRef} style={{ display:'block', position:'absolute', inset:0 }} />
+      <canvas ref={canvasRef} style={{ display:'block', position:'absolute', inset:0, background: transparent ? 'transparent' : undefined }} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import Cursor from '@/components/Cursor';
 import type { MindNode } from '@/components/MindMapViz';
 
 const MindMapViz = dynamic(() => import('@/components/MindMapViz'), { ssr: false });
+const DitherBg   = dynamic(() => import('@/components/DitherBg'),   { ssr: false });
 
 const PARKER_NODES: MindNode[] = [
   { id:'ml',       label:'Machine Learning', color:'#5B8FFF' },
@@ -29,14 +30,8 @@ const TYLER_NODES: MindNode[] = [
 const SHARED_LABELS = ['Chess','Coffee','Philosophy','Startups'];
 const OVERLAP_SLOTS = ['Monday 10:00 AM','Wednesday 3:00 PM'];
 
-const bg: React.CSSProperties = {
-  minHeight: '100vh',
-  background: 'radial-gradient(ellipse at 20% 30%, rgba(91,143,255,0.08) 0%, transparent 55%), radial-gradient(ellipse at 80% 70%, rgba(155,91,255,0.06) 0%, transparent 50%), linear-gradient(180deg,#060A1A 0%,#07101F 100%)',
-  fontFamily: "'DM Sans',sans-serif", color:'#fff',
-};
-
 export default function ConnectPage() {
-  const [name, setName] = useState('You');
+  const [name, setName]       = useState('You');
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -45,10 +40,17 @@ export default function ConnectPage() {
   }, []);
 
   return (
-    <div style={{...bg, cursor:'none'}}>
+    <div style={{ minHeight:'100vh', position:'relative', fontFamily:"'DM Sans',sans-serif", color:'#fff', cursor:'none' }}>
       <Cursor />
+
+      {/* Dither background */}
+      <div style={{ position:'fixed', inset:0, zIndex:0 }}>
+        <DitherBg />
+      </div>
+      <div style={{ position:'fixed', inset:0, zIndex:1, background:'rgba(4,6,18,0.72)' }} />
+
       {/* Nav */}
-      <div style={{ position:'sticky', top:0, zIndex:50, padding:'18px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', background:'rgba(6,10,26,.90)', backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(91,143,255,.10)' }}>
+      <div style={{ position:'sticky', top:0, zIndex:50, padding:'18px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', background:'rgba(4,6,18,0.82)', backdropFilter:'blur(24px)', borderBottom:'1px solid rgba(91,143,255,.10)' }}>
         <a href="/mindmap" style={{ fontSize:13, color:'rgba(150,190,255,.55)', textDecoration:'none' }}>← Your map</a>
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           <div style={{ width:20,height:20,borderRadius:'50%',background:'linear-gradient(135deg,#5B8FFF,#9B5BFF)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9 }}>◈</div>
@@ -57,10 +59,7 @@ export default function ConnectPage() {
         <div style={{ fontSize:13, color:'rgba(150,190,255,.45)' }}>1 match found</div>
       </div>
 
-      <div style={{
-        maxWidth:1100, margin:'0 auto', padding:'60px 32px 80px',
-        opacity: visible?1:0, transition:'opacity .8s ease',
-      }}>
+      <div style={{ position:'relative', zIndex:2, maxWidth:1100, margin:'0 auto', padding:'60px 32px 80px', opacity: visible?1:0, transition:'opacity .8s ease' }}>
 
         {/* Header */}
         <div style={{ textAlign:'center', marginBottom:56 }}>
@@ -76,11 +75,11 @@ export default function ConnectPage() {
         {/* Match score */}
         <div style={{ display:'flex', justifyContent:'center', gap:32, marginBottom:56, flexWrap:'wrap' }}>
           {[
-            { val:'73%',    label:'Mind map overlap' },
-            { val:'4',      label:'Shared interests' },
-            { val:'2',      label:'Free time overlaps' },
+            { val:'73%', label:'Mind map overlap' },
+            { val:'4',   label:'Shared interests' },
+            { val:'2',   label:'Free time overlaps' },
           ].map(s => (
-            <div key={s.label} style={{ textAlign:'center', padding:'20px 32px', borderRadius:16, background:'rgba(91,143,255,.06)', border:'1px solid rgba(91,143,255,.14)' }}>
+            <div key={s.label} style={{ textAlign:'center', padding:'20px 32px', borderRadius:16, background:'rgba(91,143,255,.07)', border:'1px solid rgba(91,143,255,.16)' }}>
               <div style={{ fontFamily:"'Playfair Display',serif", fontSize:36, fontWeight:500, color:'var(--blue)', lineHeight:1 }}>{s.val}</div>
               <div style={{ fontSize:12, color:'rgba(150,190,255,.55)', marginTop:6, letterSpacing:'.06em' }}>{s.label}</div>
             </div>
@@ -91,7 +90,7 @@ export default function ConnectPage() {
         <div style={{ display:'grid', gridTemplateColumns:'1fr 80px 1fr', gap:0, alignItems:'center', marginBottom:48 }}>
 
           {/* Parker map */}
-          <div style={{ background:'rgba(8,12,32,.60)', border:'1px solid rgba(91,143,255,.14)', borderRadius:20, padding:'24px 16px 16px', overflow:'hidden' }}>
+          <div style={{ background:'rgba(6,10,26,.72)', border:'1px solid rgba(91,143,255,.16)', borderRadius:20, padding:'24px 16px 16px', overflow:'hidden', backdropFilter:'blur(20px)' }}>
             <div style={{ textAlign:'center', marginBottom:8 }}>
               <div style={{ fontFamily:"'Playfair Display',serif", fontSize:16, fontWeight:500, color:'rgba(255,255,255,.85)' }}>{name}</div>
               <div style={{ fontSize:11, color:'rgba(150,190,255,.45)', marginTop:2 }}>{PARKER_NODES.length} interest nodes</div>
@@ -113,7 +112,7 @@ export default function ConnectPage() {
           </div>
 
           {/* Tyler map */}
-          <div style={{ background:'rgba(12,8,32,.60)', border:'1px solid rgba(155,91,255,.14)', borderRadius:20, padding:'24px 16px 16px', overflow:'hidden' }}>
+          <div style={{ background:'rgba(10,6,26,.72)', border:'1px solid rgba(155,91,255,.16)', borderRadius:20, padding:'24px 16px 16px', overflow:'hidden', backdropFilter:'blur(20px)' }}>
             <div style={{ textAlign:'center', marginBottom:8 }}>
               <div style={{ fontFamily:"'Playfair Display',serif", fontSize:16, fontWeight:500, color:'rgba(255,255,255,.85)' }}>Tyler</div>
               <div style={{ fontSize:11, color:'rgba(150,190,255,.45)', marginTop:2 }}>{TYLER_NODES.length} interest nodes</div>
@@ -123,7 +122,7 @@ export default function ConnectPage() {
         </div>
 
         {/* Schedule overlap */}
-        <div style={{ marginBottom:40, padding:'24px 28px', borderRadius:16, background:'rgba(91,143,255,.05)', border:'1px solid rgba(91,143,255,.14)' }}>
+        <div style={{ marginBottom:40, padding:'24px 28px', borderRadius:16, background:'rgba(6,10,26,.72)', border:'1px solid rgba(91,143,255,.14)', backdropFilter:'blur(20px)' }}>
           <div style={{ fontSize:10, letterSpacing:'.18em', textTransform:'uppercase', color:'var(--blue)', marginBottom:14 }}>Schedule overlaps</div>
           <div style={{ display:'flex', gap:12, flexWrap:'wrap' }}>
             {OVERLAP_SLOTS.map(slot => (
@@ -141,7 +140,7 @@ export default function ConnectPage() {
         </div>
 
         {/* Claude's read */}
-        <div style={{ marginBottom:48, padding:'28px', borderRadius:16, background:'rgba(8,12,36,.70)', border:'1px solid rgba(91,143,255,.15)' }}>
+        <div style={{ marginBottom:48, padding:'28px', borderRadius:16, background:'rgba(6,10,26,.72)', border:'1px solid rgba(91,143,255,.15)', backdropFilter:'blur(20px)' }}>
           <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14 }}>
             <div style={{ width:28,height:28,borderRadius:'50%',background:'linear-gradient(135deg,#5B8FFF,#9B5BFF)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13 }}>◈</div>
             <span style={{ fontSize:11, letterSpacing:'.12em', textTransform:'uppercase', color:'rgba(150,190,255,.60)' }}>Claude&apos;s read</span>
@@ -159,7 +158,6 @@ export default function ConnectPage() {
             background:'linear-gradient(135deg, #5B8FFF, #9B5BFF)',
             color:'#fff', fontSize:15, fontWeight:500, textDecoration:'none',
             boxShadow:'0 8px 32px rgba(91,143,255,.30)',
-            transition:'opacity .2s, transform .2s',
           }}>
             View shared mind map
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

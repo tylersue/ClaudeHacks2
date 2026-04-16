@@ -5,6 +5,7 @@ import Cursor from '@/components/Cursor';
 import type { MindNode } from '@/components/MindMapViz';
 
 const OverlapMindMap = dynamic(() => import('@/components/OverlapMindMap'), { ssr: false });
+const DitherBg       = dynamic(() => import('@/components/DitherBg'),       { ssr: false });
 
 const UNIQUE_PARKER: MindNode[] = [
   { id:'ml',      label:'Machine Learning', color:'#5B8FFF' },
@@ -23,18 +24,13 @@ const SHARED: MindNode[] = [
   { id:'startups', label:'Startups',   color:'#5B8FFF' },
 ];
 
-const bg: React.CSSProperties = {
-  minHeight:'100vh',
-  background:'radial-gradient(ellipse at 20% 30%, rgba(91,143,255,0.08) 0%, transparent 55%), radial-gradient(ellipse at 80% 70%, rgba(155,91,255,0.07) 0%, transparent 50%), linear-gradient(180deg,#060A1A 0%,#07101F 100%)',
-  fontFamily:"'DM Sans',sans-serif", color:'#fff',
-};
-
 interface ChatMessage {
   id: number;
   sender: 'me' | 'tyler';
   text: string;
   time: string;
 }
+
 
 export default function OverlapPage() {
   const [name, setName]   = useState('You');
@@ -97,52 +93,59 @@ export default function OverlapPage() {
   };
 
   return (
-    <div style={{...bg, cursor:'none'}}>
+    <div style={{ minHeight:'100vh', position:'relative', fontFamily:"'DM Sans',sans-serif", color:'#fff', cursor:'none' }}>
       <Cursor />
+
+      {/* Dither background */}
+      <div style={{ position:'fixed', inset:0, zIndex:0 }}>
+        <DitherBg />
+      </div>
+      <div style={{ position:'fixed', inset:0, zIndex:1, background:'rgba(4,6,18,0.72)' }} />
+
       {/* Nav */}
-      <div style={{ position:'sticky',top:0,zIndex:50,padding:'18px 32px',display:'flex',alignItems:'center',justifyContent:'space-between',background:'rgba(6,10,26,.90)',backdropFilter:'blur(16px)',borderBottom:'1px solid rgba(91,143,255,.10)' }}>
-        <a href="/connect" style={{ fontSize:13,color:'rgba(150,190,255,.55)',textDecoration:'none' }}>← Connections</a>
-        <div style={{ display:'flex',alignItems:'center',gap:8 }}>
+      <div style={{ position:'sticky', top:0, zIndex:50, padding:'18px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', background:'rgba(4,6,18,0.82)', backdropFilter:'blur(24px)', borderBottom:'1px solid rgba(91,143,255,.10)' }}>
+        <a href="/connect" style={{ fontSize:13, color:'rgba(150,190,255,.55)', textDecoration:'none' }}>← Connections</a>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           <div style={{ width:20,height:20,borderRadius:'50%',background:'linear-gradient(135deg,#5B8FFF,#9B5BFF)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9 }}>◈</div>
           <span style={{ fontFamily:"'Playfair Display',serif",fontSize:14,color:'rgba(255,255,255,.65)' }}>Madison <em style={{fontStyle:'italic',color:'#5B8FFF'}}>AI Connect</em></span>
         </div>
-        <div style={{ fontSize:13,color:'rgba(150,190,255,.45)' }}>Shared map</div>
+        <div style={{ fontSize:13, color:'rgba(150,190,255,.45)' }}>Shared map</div>
       </div>
 
-      <div style={{ maxWidth:1100, margin:'0 auto', padding:'48px 32px 80px', opacity:visible?1:0, transition:'opacity .8s ease' }}>
+      <div style={{ position:'relative', zIndex:2, maxWidth:1100, margin:'0 auto', padding:'48px 32px 80px', opacity: visible?1:0, transition:'opacity .8s ease' }}>
 
         {/* Header */}
         <div style={{ textAlign:'center', marginBottom:40 }}>
-          <div style={{ fontSize:10,letterSpacing:'.20em',textTransform:'uppercase',color:'var(--blue)',marginBottom:12 }}>Shared mind map</div>
-          <h1 style={{ fontFamily:"'Playfair Display',serif",fontSize:'clamp(26px,3.5vw,44px)',fontWeight:500,lineHeight:1.1,marginBottom:14 }}>
-            {name} <span style={{ color:'rgba(255,255,255,.30)' }}>×</span> <em style={{ fontStyle:'italic',color:'#9B5BFF' }}>Tyler</em>
+          <div style={{ fontSize:10, letterSpacing:'.20em', textTransform:'uppercase', color:'var(--blue)', marginBottom:12 }}>Shared mind map</div>
+          <h1 style={{ fontFamily:"'Playfair Display',serif", fontSize:'clamp(26px,3.5vw,44px)', fontWeight:500, lineHeight:1.1, marginBottom:14 }}>
+            {name} <span style={{ color:'rgba(255,255,255,.30)' }}>×</span> <em style={{ fontStyle:'italic', color:'#9B5BFF' }}>Tyler</em>
           </h1>
-          <p style={{ fontSize:14,fontWeight:300,color:'rgba(180,200,255,.50)',maxWidth:440,margin:'0 auto' }}>
+          <p style={{ fontSize:14, fontWeight:300, color:'rgba(180,200,255,.50)', maxWidth:440, margin:'0 auto' }}>
             4 shared nodes highlighted. Sparks flow from each of you through what you have in common.
           </p>
         </div>
 
         {/* The overlap mind map */}
-        <div style={{ background:'rgba(8,12,32,.55)', borderRadius:24, border:'1px solid rgba(91,143,255,.12)', overflow:'hidden', marginBottom:48 }}>
+        <div style={{ borderRadius:24, border:'1px solid rgba(91,143,255,.14)', overflow:'hidden', marginBottom:48, background:'rgba(4,6,18,.60)', backdropFilter:'blur(20px)' }}>
           <OverlapMindMap
             nameA={name}
             nameB="Tyler"
             uniqueA={UNIQUE_PARKER}
             uniqueB={UNIQUE_TYLER}
             shared={SHARED}
-            height={500}
+            height={520}
           />
         </div>
 
         {/* Shared interest breakdown */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:16, marginBottom:48 }}>
           {[
-            { icon:'♟', label:'Chess', color:'#9B5BFF', desc:'Both of you learned it young and kept coming back to it. It shows up across your memory files as a metaphor for how you think.' },
-            { icon:'☕', label:'Coffee', color:'#FF9B5B', desc:'Not just a drink — you both use coffee conversations as your primary social thinking format. You process ideas with people over coffee.' },
+            { icon:'♟', label:'Chess',      color:'#9B5BFF', desc:'Both of you learned it young and kept coming back to it. It shows up across your memory files as a metaphor for how you think.' },
+            { icon:'☕', label:'Coffee',     color:'#FF9B5B', desc:'Not just a drink — you both use coffee conversations as your primary social thinking format. You process ideas with people over coffee.' },
             { icon:'∞', label:'Philosophy', color:'#5BFFE8', desc:'Different angles: you lean analytic, Tyler leans continental. That tension is exactly why this conversation will be interesting.' },
-            { icon:'🚀', label:'Startups', color:'#5B8FFF', desc:'You\'ve both been asking Claude about the same layer of the stack: product-market fit and when to build vs. buy.' },
+            { icon:'🚀', label:'Startups',  color:'#5B8FFF', desc:"You've both been asking Claude about the same layer of the stack: product-market fit and when to build vs. buy." },
           ].map(item => (
-            <div key={item.label} style={{ padding:'22px 20px', borderRadius:16, background:'rgba(8,12,36,.70)', border:`1px solid ${item.color}22` }}>
+            <div key={item.label} style={{ padding:'22px 20px', borderRadius:16, background:'rgba(6,10,26,.72)', border:`1px solid ${item.color}22`, backdropFilter:'blur(20px)' }}>
               <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
                 <span style={{ fontSize:18 }}>{item.icon}</span>
                 <span style={{ fontFamily:"'Playfair Display',serif", fontSize:16, fontWeight:500, color:item.color }}>{item.label}</span>
@@ -152,14 +155,13 @@ export default function OverlapPage() {
           ))}
         </div>
 
-        {/* Activity suggestion — the hero of this page */}
+        {/* Activity suggestion */}
         <div style={{
           borderRadius:20, overflow:'hidden',
           border:'1px solid rgba(91,143,255,.20)',
-          background:'rgba(6,10,26,.80)',
-          backdropFilter:'blur(20px)',
+          background:'rgba(4,6,18,.82)',
+          backdropFilter:'blur(28px)',
         }}>
-          {/* Top accent */}
           <div style={{ height:3, background:'linear-gradient(90deg,#5B8FFF,#9B5BFF,#5BFFE8)' }} />
           <div style={{ padding:'36px 40px' }}>
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:24 }}>
